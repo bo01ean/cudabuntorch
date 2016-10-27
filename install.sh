@@ -1,0 +1,98 @@
+#!/bin/bash
+
+trap 'exit 130' INT
+
+targetVersion="16.04"
+isLinux=$(uname -a | grep -E 'Linux' | wc | awk '{print $1}')
+ubuntuVersion=$(lsb_release -r | awk '{print $2}')
+
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+if [ "$ubuntuVersion" != "$targetVersion"  -o  "$isLinux" != "1"  ]; then
+	   echo "This script must be run on Ubuntu 16.04" 1>&2
+   	   ##exit 1
+fi
+
+## Slurp helpers
+## Clean up Dockerfiles
+function fixfile ()
+{
+        sed -i '/^LABEL/d' $1 #remove unparsable lines
+        sed -i '/^MAINTAINER/d' $1 #remove unparsable lines
+        sed -i '/^FROM/d' $1 #remove unparsable lines
+        sed -i '/</d' $1 #remove unparsable lines
+        sed -i "/apt-get remove/d" $1 ## prevent removing of pkgs
+        sed -i "s/RUN //g" $1
+        chmod +x $1 #make it hot
+}
+
+## Map functions Dockerfile will use to install
+function ENV ()
+{
+	export $1="$2" ## Export into running shell
+	echo "export $1=$2" >> ~/.cudaconf ## append to conf for later
+}
+
+## SYSTEM STUFF
+function sudo ()
+{
+	$@ ## this script assumes root, just wrap
+}
+
+## NO OPS for system commands
+function rm ()
+{
+	:
+}
+
+## Make a home for our downloaded Dockerfiles
+BUILDDIR=/tmp/Dockerfiles
+mkdir -p $BUILDDIR
+## Make a home for our downloaded tar files
+DOWNLOADS=/tmp/Downloads
+mkdir -p $DOWNLOADS
+
+cd $DOWNLOADS
+
+apt-get update
+apt-get install -y vim curl git
+
+runtime="$BUILDDIR/runtime.sh"
+curl -o $runtime -fsSL https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/ubuntu-16.04/cuda/8.0/runtime/Dockerfile
+fixfile $runtime
+
+devel="$BUILDDIR/devel.sh"
+curl -o $devel -fsSL https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/ubuntu-16.04/cuda/8.0/devel/Dockerfile
+fixfile $devel
+
+cudnn="$BUILDDIR/cudnn.sh"
+curl -o $cudnn -fsSL https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/ubuntu-16.04/cuda/8.0/runtime/cudnn5/Dockerfile
+sed -i '/</d' $cudnn
+fixfile $cudnn
+
+. $runtime
+. $devel
+. $cudnn
+cd
+##Clean up
+rm -rf $DOWNLOADS
+## We'll need this later
+unset -f rm
+
+
+git clone https://github.com/torch/distro torch
+cd ~/torch
+## Knockout patch to use older GCC
+sed -i 's/Found GCC 5, installing GCC 4.9/Leaving stock GCC in place.../g' install-deps
+sed -i '/sudo apt-get install -y gcc-4.9 libgfortran-4.9-dev g++-4.9/d' install-deps
+. install-deps ##Torch will install everything we need, fire inside this environment
+
+## pickup cuda stuff
+echo "source ~/.cudaconf" >> ~/.bashrc
+source ~/.bashrc
+cd ~/torch
+## Install torch!
+./install.sh
