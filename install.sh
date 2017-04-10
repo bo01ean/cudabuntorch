@@ -61,15 +61,15 @@ apt-get update
 apt-get install -y vim curl git
 
 runtime="$BUILDDIR/runtime.sh"
-curl -o $runtime -fsSL https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/ubuntu-16.04/cuda/8.0/runtime/Dockerfile
+curl -o $runtime -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu16.04/8.0/runtime/Dockerfile
 fixfile $runtime
 
 devel="$BUILDDIR/devel.sh"
-curl -o $devel -fsSL https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/ubuntu-16.04/cuda/8.0/devel/Dockerfile
+curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu16.04/8.0/devel/Dockerfile
 fixfile $devel
 
 cudnn="$BUILDDIR/cudnn.sh"
-curl -o $cudnn -fsSL https://raw.githubusercontent.com/NVIDIA/nvidia-docker/master/ubuntu-16.04/cuda/8.0/runtime/cudnn5/Dockerfile
+curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu16.04/8.0/runtime/cudnn5/Dockerfile
 sed -i '/</d' $cudnn
 fixfile $cudnn
 
