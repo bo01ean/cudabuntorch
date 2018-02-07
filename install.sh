@@ -3,6 +3,9 @@
 trap 'exit 130' INT
 
 targetVersion="16.04"
+export CUDA_VER="9.1"
+export UBUNTU_VER="ubuntu16.04"
+
 isLinux=$(uname -a | grep -E 'Linux' | wc | awk '{print $1}')
 ubuntuVersion=$(lsb_release -r | awk '{print $2}')
 
@@ -61,15 +64,15 @@ apt-get update
 apt-get install -y vim curl git
 
 runtime="$BUILDDIR/runtime.sh"
-curl -o $runtime -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu16.04/8.0/runtime/Dockerfile
+curl -o $runtime -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/runtime/Dockerfile
 fixfile $runtime
 
 devel="$BUILDDIR/devel.sh"
-curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu16.04/8.0/devel/Dockerfile
+curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/Dockerfile
 fixfile $devel
 
 cudnn="$BUILDDIR/cudnn.sh"
-curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu16.04/8.0/runtime/cudnn5/Dockerfile
+curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/runtime/cudnn5/Dockerfile
 sed -i '/</d' $cudnn
 fixfile $cudnn
 
