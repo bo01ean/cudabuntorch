@@ -72,7 +72,7 @@ curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/de
 fixfile $devel
 
 cudnn="$BUILDDIR/cudnn.sh"
-curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/cudnn5/Dockerfile
+curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/cudnn7/Dockerfile
 sed -i '/</d' $cudnn
 fixfile $cudnn
 
