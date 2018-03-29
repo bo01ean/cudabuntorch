@@ -2,7 +2,7 @@
 
 trap 'exit 130' INT
 
-targetVersion="16.04"
+export targetVersion="16.04"
 export CUDA_VER="9.1"
 export UBUNTU_VER="ubuntu16.04"
 
@@ -72,7 +72,7 @@ curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/de
 fixfile $devel
 
 cudnn="$BUILDDIR/cudnn.sh"
-curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/runtime/cudnn5/Dockerfile
+curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/cudnn5/Dockerfile
 sed -i '/</d' $cudnn
 fixfile $cudnn
 
