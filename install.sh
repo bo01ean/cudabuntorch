@@ -63,6 +63,10 @@ cd $DOWNLOADS
 apt-get update
 apt-get install -y vim curl git
 
+base="$BUILDDIR/base.sh"
+curl -o $base -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/base/Dockerfile
+fixfile $base
+
 runtime="$BUILDDIR/runtime.sh"
 curl -o $runtime -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/runtime/Dockerfile
 fixfile $runtime
