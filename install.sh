@@ -2,6 +2,10 @@
 
 trap 'exit 130' INT
 
+
+export REPO_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
 export targetVersion="16.04"
 export CUDA_VER="9.1"
 export UBUNTU_VER="ubuntu16.04"
@@ -11,6 +15,7 @@ ubuntuVersion=$(lsb_release -r | awk '{print $2}')
 
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root" 1>&2
+   sudo $REPO_HOME/install.sh
    exit 1
 fi
 
@@ -21,8 +26,7 @@ fi
 
 ## Slurp helpers
 ## Clean up Dockerfiles
-function fixfile ()
-{
+function fixfile () {
         sed -i '/^LABEL/d' $1 #remove unparsable lines
         sed -i '/^MAINTAINER/d' $1 #remove unparsable lines
         sed -i '/^FROM/d' $1 #remove unparsable lines
@@ -33,22 +37,23 @@ function fixfile ()
 }
 
 ## Map functions Dockerfile will use to install
-function ENV ()
-{
+function ENV () {
 	export $1="$2" ## Export into running shell
 	echo "export $1=$2" >> ~/.cudaconf ## append to conf for later
 }
 
 ## SYSTEM STUFF
-function sudo ()
-{
+function sudo () {
 	$@ ## this script assumes root, just wrap
 }
 
 ## NO OPS for system commands
-function rm ()
-{
+function rm () {
 	:
+}
+
+function ARG () {
+        :
 }
 
 ## Make a home for our downloaded Dockerfiles
@@ -80,9 +85,11 @@ curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/de
 sed -i '/</d' $cudnn
 fixfile $cudnn
 
+. $base
 . $runtime
 . $devel
 . $cudnn
+
 cd
 ##Clean up
 rm -rf $DOWNLOADS
