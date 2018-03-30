@@ -24,6 +24,9 @@ if [ "$ubuntuVersion" != "$targetVersion"  -o  "$isLinux" != "1"  ]; then
    	   ##exit 1
 fi
 
+## Clean up.
+rm ~/.cudaconf
+
 ## Slurp helpers
 ## Clean up Dockerfiles
 function fixfile () {
