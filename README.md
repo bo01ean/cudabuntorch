@@ -8,7 +8,7 @@ Me too. Let's go:
 ```
 git clone https://github.com/bo01ean/cudabuntorch /tmp/cudabuntorch
 cd /tmp/cudabuntorch
-sudo ./install.sh
+sudo torch=yes ./install.sh
 
 ```
 
@@ -16,5 +16,5 @@ sudo ./install.sh
 ```
 git clone https://github.com/bo01ean/cudabuntorch /tmp/cudabuntorch
 cd /tmp/cudabuntorch
-sudo ./dockergo.sh
+sudo torch=yes ./dockergo.sh
 ```
