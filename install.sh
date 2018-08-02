@@ -4,7 +4,6 @@ trap 'exit 130' INT
 
 export REPO_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-
 function containsElement () {
   local e match="$1"
   shift
@@ -49,13 +48,13 @@ rm ~/.cudaconf
 ## Slurp helpers
 ## Clean up Dockerfiles
 function fixfile () {
-        sed -i '/^LABEL/d' $1 #remove unparsable lines
-        sed -i '/^MAINTAINER/d' $1 #remove unparsable lines
-        sed -i '/^FROM/d' $1 #remove unparsable lines
-        sed -i '/</d' $1 #remove unparsable lines
-        sed -i "/apt-get remove/d" $1 ## prevent removing of pkgs
-        sed -i "s/RUN //g" $1
-        chmod +x $1 #make it hot
+  sed -i '/^LABEL/d' $1 #remove unparsable lines
+  sed -i '/^MAINTAINER/d' $1 #remove unparsable lines
+  sed -i '/^FROM/d' $1 #remove unparsable lines
+  sed -i '/</d' $1 #remove unparsable lines
+  sed -i "/apt-get remove/d" $1 ## prevent removing of pkgs
+  sed -i "s/RUN //g" $1
+  chmod +x $1 #make it hot
 }
 
 ## Map functions Dockerfile will use to install
