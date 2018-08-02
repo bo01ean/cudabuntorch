@@ -119,16 +119,19 @@ unset -f rm
 ##Clean up
 rm -rf $DOWNLOADS
 
-git clone https://github.com/torch/distro torch
-cd ~/torch
-## Knockout patch to use older GCC
-sed -i 's/Found GCC 5, installing GCC 4.9/Leaving stock GCC in place.../g' install-deps
-sed -i '/sudo apt-get install -y gcc-4.9 libgfortran-4.9-dev g++-4.9/d' install-deps
-. install-deps ##Torch will install everything we need, fire inside this environment
+if [ ! -z ${torch+x} ]; then
+	echo "Installing Torch"
+	git clone https://github.com/torch/distro torch
+	cd ~/torch
+	## Knockout patch to use older GCC
+	sed -i 's/Found GCC 5, installing GCC 4.9/Leaving stock GCC in place.../g' install-deps
+	sed -i '/sudo apt-get install -y gcc-4.9 libgfortran-4.9-dev g++-4.9/d' install-deps
+	. install-deps ##Torch will install everything we need, fire inside this environment
 
-## pickup cuda stuff
-echo "source ~/.cudaconf" >> ~/.bashrc
-source ~/.bashrc
-cd ~/torch
-## Install torch!
-./install.sh
+	## pickup cuda stuff
+	echo "source ~/.cudaconf" >> ~/.bashrc
+	source ~/.bashrc
+	cd ~/torch
+	## Install torch!
+	./install.sh
+fi
