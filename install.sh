@@ -34,8 +34,6 @@ if ! containsElement "$UBUNTU_VER" "${SUPPORTED_VERSIONS_ARR[@]}"; then
   exit 127;
 fi 
 
-export UBUNTU_VER="ubuntu$OS_VER"
-
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root" 1>&2
    sudo $REPO_HOME/install.sh
@@ -90,19 +88,19 @@ apt-get update
 apt-get install -y vim curl git
 
 base="$BUILDDIR/base.sh"
-curl -o $base -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/base/Dockerfile
+curl -o $base -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/base/Dockerfile
 fixfile $base
 
 runtime="$BUILDDIR/runtime.sh"
-curl -o $runtime -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/runtime/Dockerfile
+curl -o $runtime -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/runtime/Dockerfile
 fixfile $runtime
 
 devel="$BUILDDIR/devel.sh"
-curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/Dockerfile
+curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/devel/Dockerfile
 fixfile $devel
 
 cudnn="$BUILDDIR/cudnn.sh"
-curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/cudnn7/Dockerfile
+curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/devel/cudnn7/Dockerfile
 fixfile $cudnn
 
 . $base
