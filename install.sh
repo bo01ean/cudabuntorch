@@ -2,26 +2,44 @@
 
 trap 'exit 130' INT
 
-
 export REPO_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-
-export targetVersion="16.04"
-export CUDA_VER="9.1"
-export UBUNTU_VER="ubuntu16.04"
+function containsElement () {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
+}
 
 isLinux=$(uname -a | grep -E 'Linux' | wc | awk '{print $1}')
-ubuntuVersion=$(lsb_release -r | awk '{print $2}')
+
+if [ "$isLinux" != "1" ]; then
+  echo "This script must be run on Linux " 1>&2
+  if ! which lsb_release >/dev/null; then
+    echo "This script is intended to run on Ubuntu.";
+    exit 1
+  fi
+  exit 1
+fi
+
+SUPPORTED_VERSIONS="14.04,16.04,17.04,18.04"
+SUPPORTED_VERSIONS_ARR=( ${SUPPORTED_VERSIONS//,/ } )
+
+export CUDA_VER="9.2"
+
+UBUNTU_VER=$(lsb_release -r | awk '{print $2}')
+
+if ! containsElement "$UBUNTU_VER" "${SUPPORTED_VERSIONS_ARR[@]}"; then
+  echo "Ubuntu $UBUNTU_VER is not supported."
+  exit 127;
+fi 
+
+export UBUNTU_VER="ubuntu$OS_VER"
 
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root" 1>&2
    sudo $REPO_HOME/install.sh
    exit 1
-fi
-
-if [ "$ubuntuVersion" != "$targetVersion"  -o  "$isLinux" != "1"  ]; then
-	   echo "This script must be run on Ubuntu 16.04" 1>&2
-   	   ##exit 1
 fi
 
 ## Clean up.
@@ -30,13 +48,13 @@ rm ~/.cudaconf
 ## Slurp helpers
 ## Clean up Dockerfiles
 function fixfile () {
-        sed -i '/^LABEL/d' $1 #remove unparsable lines
-        sed -i '/^MAINTAINER/d' $1 #remove unparsable lines
-        sed -i '/^FROM/d' $1 #remove unparsable lines
-        sed -i '/</d' $1 #remove unparsable lines
-        sed -i "/apt-get remove/d" $1 ## prevent removing of pkgs
-        sed -i "s/RUN //g" $1
-        chmod +x $1 #make it hot
+  sed -i '/^LABEL/d' $1 #remove unparsable lines
+  sed -i '/^MAINTAINER/d' $1 #remove unparsable lines
+  sed -i '/^FROM/d' $1 #remove unparsable lines
+  sed -i '/</d' $1 #remove unparsable lines
+  sed -i "/apt-get remove/d" $1 ## prevent removing of pkgs
+  sed -i "s/RUN //g" $1
+  chmod +x $1 #make it hot
 }
 
 ## Map functions Dockerfile will use to install
@@ -66,7 +84,7 @@ mkdir -p $BUILDDIR
 DOWNLOADS=/tmp/Downloads
 mkdir -p $DOWNLOADS
 
-cd $DOWNLOADS
+pushd $DOWNLOADS
 
 apt-get update
 apt-get install -y vim curl git
@@ -85,7 +103,6 @@ fixfile $devel
 
 cudnn="$BUILDDIR/cudnn.sh"
 curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/$UBUNTU_VER/$CUDA_VER/devel/cudnn7/Dockerfile
-sed -i '/</d' $cudnn
 fixfile $cudnn
 
 . $base
@@ -93,11 +110,13 @@ fixfile $cudnn
 . $devel
 . $cudnn
 
-cd
-##Clean up
-rm -rf $DOWNLOADS
+popd
+
 ## We'll need this later
 unset -f rm
+
+##Clean up
+rm -rf $DOWNLOADS
 
 if [ ! -z ${torch+x} ]; then
 	echo "Installing Torch"
