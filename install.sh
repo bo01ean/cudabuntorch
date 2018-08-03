@@ -13,9 +13,11 @@ function containsElement () {
 
 isLinux=$(uname -a | grep -E 'Linux' | wc | awk '{print $1}')
 
+LSB_FILE=/etc/lsb-release
+
 if [ "$isLinux" != "1" ]; then
-  echo "This script must be run on Linux " 1>&2
-  if ! which lsb_release >/dev/null; then
+  echo "This script must be run on Linux "
+  if ! -f $LSB_FILE; then
     echo "This script is intended to run on Ubuntu.";
     exit 1
   fi
@@ -27,7 +29,9 @@ SUPPORTED_VERSIONS_ARR=( ${SUPPORTED_VERSIONS//,/ } )
 
 export CUDA_VER="9.2"
 
-UBUNTU_VER=$(lsb_release -r | awk '{print $2}')
+. $LSB_FILE
+
+UBUNTU_VER="$DISTRIB_RELEASE"
 
 if ! containsElement "$UBUNTU_VER" "${SUPPORTED_VERSIONS_ARR[@]}"; then
   echo "Ubuntu $UBUNTU_VER is not supported."
@@ -99,13 +103,19 @@ devel="$BUILDDIR/devel.sh"
 curl -o $devel -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/devel/Dockerfile
 fixfile $devel
 
-cudnn="$BUILDDIR/cudnn.sh"
+cudnnrt="$BUILDDIR/cudnn-runtime.sh"
+curl -o $cudnnrt -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/runtime/cudnn7/Dockerfile
+fixfile $cudnnrt
+
+cudnn="$BUILDDIR/cudnn-devel.sh"
 curl -o $cudnn -fsSL https://gitlab.com/nvidia/cuda/raw/ubuntu$UBUNTU_VER/$CUDA_VER/devel/cudnn7/Dockerfile
 fixfile $cudnn
+
 
 . $base
 . $runtime
 . $devel
+. $cudnnrt
 . $cudnn
 
 popd
